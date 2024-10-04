@@ -1,0 +1,4 @@
+{
+    "filter_paths": "lib",
+    "solc_disable_warnings": true
+}

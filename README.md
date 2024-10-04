@@ -1,3 +1,26 @@
+## Static Analysis
+
+### Slither
+
+```bash
+docker pull ghcr.io/trailofbits/eth-security-toolbox:nightly
+docker run -it --rm -v ${PWD}:/tmp -w /tmp ghcr.io/trailofbits/eth-security-toolbox:nightly bash
+
+# inside container
+slither src/DXIToken.sol
+slither src/DXITokenMigration.sol
+```
+
+### Mythril
+
+```bash
+docker pull mythril/myth
+docker run -it --rm -v ${PWD}:/tmp -w /tmp mythril/myth bash
+
+# inside container
+myth -v 5 analyze src/DXIToken.sol --solc-json mythril.config.json
+```
+
 ## Foundry
 
 **Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
