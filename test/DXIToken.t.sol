@@ -61,12 +61,11 @@ contract DXITokenTest is Test {
     function test_Burn(address account, uint256 amount) public cleanAddress(account) {
         vm.assume(amount < INITIAL_SUPPLY);
 
-        deal(address(coin), address(account), amount, false);
+        coin.transfer(account, amount);
 
         vm.prank(account);
         coin.burn(amount);
-
-
+    
         assertEq(coin.totalSupply(), INITIAL_SUPPLY - amount);
     }
 
