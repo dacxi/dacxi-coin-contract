@@ -8,7 +8,7 @@ The initial development took place in a private repository from which this repos
 ### DXIToken
 
 DXIToken is a standard ERC20 and EIP2612 ( `permit()` ) functionality token. 
-It's also a burnable token. Token holders can burn their tokens through `burn`.
+It's also a burnable token. Token holders can burn their DXI through the `burn` method.
 
 It's initial supply is 10,000,000,000 DXI and has no supply cap in its launch.
 
@@ -74,12 +74,6 @@ $ forge snapshot
 
 ```shell
 $ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
 ```
 
 ### Cast
