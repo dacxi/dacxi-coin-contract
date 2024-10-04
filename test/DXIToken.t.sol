@@ -78,17 +78,18 @@ contract DXITokenTest is Test {
         assertTrue(coin.hasRole(minterRole, vitalik));
     }
 
-    function test_MinterRoleCannotBeGrantedAfterLock() public {
-        address vitalik = 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045;
+    function test_MinterRoleCannotBeGrantedAfterAdminRenouce() public {
+        bytes32 DEFAULT_ADMIN_ROLE = 0x00;
         bytes32 minterRole = coin.MINTER_ROLE();
+        address vitalik = 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045;
 
-        coin.grantRole(minterRole, address(this));
-        coin.lockRolesManagement();
+        coin.beginDefaultAdminTransfer(address(0));
+        skip(432001);
+        coin.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
 
-        vm.expectPartialRevert(IDXIToken.ForbiddenRoleChange.selector);
-
+        vm.expectPartialRevert(IAccessControl.AccessControlUnauthorizedAccount.selector);
         coin.grantRole(minterRole, vitalik);
-        assertTrue(coin.hasRole(minterRole, address(this)));
+
         assertFalse(coin.hasRole(minterRole, vitalik));
     }
 
@@ -103,18 +104,20 @@ contract DXITokenTest is Test {
         assertFalse(coin.hasRole(minterRole, vitalik));
     }
 
-    function test_MinterRoleCannotBeRevokedAfterLock() public {
-        address vitalik = 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045;
+    function test_MinterRoleCannotBeRevokedAfterAdminRenouce() public {
+        bytes32 DEFAULT_ADMIN_ROLE = 0x00;
         bytes32 minterRole = coin.MINTER_ROLE();
+        address vitalik = 0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045;
 
         coin.grantRole(minterRole, vitalik);
-        assertTrue(coin.hasRole(minterRole, vitalik));
 
-        coin.lockRolesManagement();
+        coin.beginDefaultAdminTransfer(address(0));
+        skip(432001);
+        coin.renounceRole(DEFAULT_ADMIN_ROLE, address(this));
 
-        vm.expectPartialRevert(IDXIToken.ForbiddenRoleChange.selector);
-
+        vm.expectPartialRevert(IAccessControl.AccessControlUnauthorizedAccount.selector);
         coin.revokeRole(minterRole, vitalik);
+
         assertTrue(coin.hasRole(minterRole, vitalik));
     }
 

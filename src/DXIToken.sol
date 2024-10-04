@@ -22,8 +22,6 @@ contract DXIToken is ERC20Permit, ERC20Burnable, AccessControlDefaultAdminRules,
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     /// @inheritdoc IDXIToken
     uint256 public constant INITIAL_SUPPLY = 10e9 * 1e18;
-    /// @inheritdoc IDXIToken
-    bool public rolesLocked = false;
 
     constructor(address initialMintDestination, address initialDefaultAdmin)
         ERC20(_NAME, _SYMBOL)
@@ -38,43 +36,9 @@ contract DXIToken is ERC20Permit, ERC20Burnable, AccessControlDefaultAdminRules,
         _mint(to, amount);
     }
 
-    /// @inheritdoc IDXIToken
-    function lockRolesManagement() public onlyRole(DEFAULT_ADMIN_ROLE) {
-        rolesLocked = true;
-        beginDefaultAdminTransfer(address(0));
-    }
-
     ///
     /// Override AccessControlDefaultAdminRules role management
     ///
-
-    /**
-     * @dev See {AccessControlDefaultAdminRules-grantRole}. Block `grantRole` after roles being locked.
-     */
-    function grantRole(bytes32 role, address account)
-        public
-        virtual
-        override(AccessControlDefaultAdminRules, IAccessControl)
-    {
-        if (rolesLocked) {
-            revert ForbiddenRoleChange();
-        }
-        super.grantRole(role, account);
-    }
-
-    /**
-     * @dev See {AccessControlDefaultAdminRules-revokeRole}. Block `grantRole` after roles being locked.
-     */
-    function revokeRole(bytes32 role, address account)
-        public
-        virtual
-        override(AccessControlDefaultAdminRules, IAccessControl)
-    {
-        if (rolesLocked) {
-            revert ForbiddenRoleChange();
-        }
-        super.revokeRole(role, account);
-    }
 
     /**
      * @dev See {ERC20Permit-nonces}.
