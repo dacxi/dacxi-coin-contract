@@ -23,7 +23,7 @@ contract DXIToken is ERC20Permit, ERC20Burnable, AccessControlDefaultAdminRules,
     /// @inheritdoc IDXIToken
     uint256 public constant INITIAL_SUPPLY = 10e9 * 1e18;
     /// @inheritdoc IDXIToken
-    bool public minterRoleLocked = false;
+    bool public rolesLocked = false;
 
     constructor(address initialMintDestination, address initialDefaultAdmin)
         ERC20(_NAME, _SYMBOL)
@@ -39,8 +39,8 @@ contract DXIToken is ERC20Permit, ERC20Burnable, AccessControlDefaultAdminRules,
     }
 
     /// @inheritdoc IDXIToken
-    function lockMinterRole() public onlyRole(DEFAULT_ADMIN_ROLE) {
-        minterRoleLocked = true;
+    function lockRolesManagement() public onlyRole(DEFAULT_ADMIN_ROLE) {
+        rolesLocked = true;
         beginDefaultAdminTransfer(address(0));
     }
 
@@ -49,29 +49,29 @@ contract DXIToken is ERC20Permit, ERC20Burnable, AccessControlDefaultAdminRules,
     ///
 
     /**
-     * @dev See {AccessControlDefaultAdminRules-grantRole}. Reverts for `MINTER_ROLE` after locking the minter role.
+     * @dev See {AccessControlDefaultAdminRules-grantRole}. Block `grantRole` after roles being locked.
      */
     function grantRole(bytes32 role, address account)
         public
         virtual
         override(AccessControlDefaultAdminRules, IAccessControl)
     {
-        if (role == MINTER_ROLE && minterRoleLocked) {
-            revert ForbiddenMinterRoleChange();
+        if (rolesLocked) {
+            revert ForbiddenRoleChange();
         }
         super.grantRole(role, account);
     }
 
     /**
-     * @dev See {AccessControlDefaultAdminRules-revokeRole}. Reverts for `MINTER_ROLE` after locking the minter role.
+     * @dev See {AccessControlDefaultAdminRules-revokeRole}. Block `grantRole` after roles being locked.
      */
     function revokeRole(bytes32 role, address account)
         public
         virtual
         override(AccessControlDefaultAdminRules, IAccessControl)
     {
-        if (role == MINTER_ROLE && minterRoleLocked) {
-            revert ForbiddenMinterRoleChange();
+        if (rolesLocked) {
+            revert ForbiddenRoleChange();
         }
         super.revokeRole(role, account);
     }

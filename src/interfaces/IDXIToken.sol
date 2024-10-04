@@ -17,7 +17,7 @@ interface IDXIToken is IERC20, IERC20Permit, IAccessControlDefaultAdminRules {
      *
      * - The `MINTER_ROLE` could not be changed after `lockMinterRole` call.
      */
-    error ForbiddenMinterRoleChange();
+    error ForbiddenRoleChange();
 
     /// @notice mint token entrypoint for the emission manager contract
     /// @param to account to receive newly minted tokens
@@ -25,9 +25,9 @@ interface IDXIToken is IERC20, IERC20Permit, IAccessControlDefaultAdminRules {
     /// @dev The function only validates the sender, the emission manager is responsible for correctness
     function mint(address to, uint256 amount) external;
 
-    /// @notice locks the `grantRole`/`revokeRole` method calls using the `MINTER_ROLE` role
-    /// @dev After calling this method, you may not grant/revoke `MINTER_ROLE` role to any other addresses
-    function lockMinterRole() external;
+    /// @notice locks the `grantRole`/`revokeRole` method calls
+    /// @dev After calling this method, you may not grant/revoke roles to any other addresses
+    function lockRolesManagement() external;
 
     /// @notice Returns the initial amount of tokens in existence.
     //slither-disable-next-line naming-convention
@@ -37,6 +37,6 @@ interface IDXIToken is IERC20, IERC20Permit, IAccessControlDefaultAdminRules {
     //slither-disable-next-line naming-convention
     function MINTER_ROLE() external view returns (bytes32);
 
-    /// @return the flag locking the `grantRole`/`revokeRole` call for `MINTER_ROLE`
-    function minterRoleLocked() external view returns (bool);
+    /// @return the flag locking the `grantRole`/`revokeRole`
+    function rolesLocked() external view returns (bool);
 }

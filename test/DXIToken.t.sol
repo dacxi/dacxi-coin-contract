@@ -83,9 +83,9 @@ contract DXITokenTest is Test {
         bytes32 minterRole = coin.MINTER_ROLE();
 
         coin.grantRole(minterRole, address(this));
-        coin.lockMinterRole();
+        coin.lockRolesManagement();
 
-        vm.expectPartialRevert(IDXIToken.ForbiddenMinterRoleChange.selector);
+        vm.expectPartialRevert(IDXIToken.ForbiddenRoleChange.selector);
 
         coin.grantRole(minterRole, vitalik);
         assertTrue(coin.hasRole(minterRole, address(this)));
@@ -110,9 +110,9 @@ contract DXITokenTest is Test {
         coin.grantRole(minterRole, vitalik);
         assertTrue(coin.hasRole(minterRole, vitalik));
 
-        coin.lockMinterRole();
+        coin.lockRolesManagement();
 
-        vm.expectPartialRevert(IDXIToken.ForbiddenMinterRoleChange.selector);
+        vm.expectPartialRevert(IDXIToken.ForbiddenRoleChange.selector);
 
         coin.revokeRole(minterRole, vitalik);
         assertTrue(coin.hasRole(minterRole, vitalik));
