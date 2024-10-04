@@ -141,7 +141,7 @@ contract DXITokenTest is Test {
         assertTrue(coin.hasRole(minterRole, account));
     }
 
-    function test_renounceDefaultAdminRoleRequiresTwoSteps(uint48 firstAttemptTime, uint48 time) public {
+    function test_RenounceDefaultAdminRoleRequiresTwoSteps(uint48 firstAttemptTime, uint48 time) public {
         vm.assume(firstAttemptTime <= coin.defaultAdminDelay());
         vm.assume(time > coin.defaultAdminDelay());
 
