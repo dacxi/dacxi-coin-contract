@@ -65,7 +65,7 @@ contract DXITokenTest is Test {
 
         vm.prank(account);
         coin.burn(amount);
-    
+
         assertEq(coin.totalSupply(), INITIAL_SUPPLY - amount);
     }
 
