@@ -10,7 +10,8 @@ The initial development took place in a private repository from which this repos
 DXIToken is a standard ERC20 and EIP2612 ( `permit()` ) functionality token. 
 It's also a burnable token. Token holders can burn their DXI through the `burn` method.
 
-It's initial supply is 10,000,000,000 DXI and has no supply cap in its launch.
+It's initial supply is 10,000,000,000 DXI and has no supply cap (although this can 
+be changed in the future).
 
 An external smart contract is responsible to control the DXI inflation through the `mint()` method. 
 The inflation smart contract will be developed and attached to the DXIToken in some future. Until than
