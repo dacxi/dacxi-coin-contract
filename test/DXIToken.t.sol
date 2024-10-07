@@ -158,6 +158,26 @@ contract DXITokenTest is Test {
         assertFalse(coin.hasRole(adminRole, address(this)));
     }
 
+    function test_MinterRoleCanBeRenouncedAfterAdminRenouce(address account, uint48 time) public {
+        vm.assume(time > coin.defaultAdminDelay());
+
+        bytes32 adminRole = coin.DEFAULT_ADMIN_ROLE();
+        bytes32 minterRole = coin.MINTER_ROLE();
+
+        coin.grantRole(minterRole, account);
+
+        coin.beginDefaultAdminTransfer(address(0));
+        skip(time);
+        coin.renounceRole(adminRole, address(this));
+
+        vm.prank(account);
+        coin.renounceRole(minterRole, account);
+        assertFalse(coin.hasRole(minterRole, account));
+
+        vm.expectPartialRevert(IAccessControl.AccessControlUnauthorizedAccount.selector);
+        coin.grantRole(minterRole, account);
+    }
+
     function test_Nonce() public view {
         uint256 nonce = coin.nonces(address(this));
         assertEq(0, nonce);
