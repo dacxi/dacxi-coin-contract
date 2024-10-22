@@ -30,10 +30,13 @@ interface IDXITokenMigration {
 
     /// @notice thrown when an invalid address is supplied
     error InvalidAddress();
+
     /// @notice thrown when DXI token address already set
     error DXITokenAddressAlreadySet();
+
     /// @notice thrown when DXI token address is not set
     error DXITokenAddressNotSet();
+
     /// @notice thrown when the address calling `migrate` is not in the whitelist
     /// @dev only thrown when the whitelist is enabled
     error AddressNotInWhitelist();
