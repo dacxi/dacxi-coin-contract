@@ -13,6 +13,17 @@ interface IDXITokenMigration {
     /// @param amount amount to be migrated
     event Migrated(address indexed account, uint256 amount);
 
+    /// @notice emitted when an account is added within whitelist
+    /// @param account account to be added
+    event AddressAddedToWhitelist(address indexed account);
+
+    /// @notice emitted when an account is removed from whitelist
+    /// @param account account to be removed
+    event AddressRemovedFromWhitelist(address indexed account);
+
+    /// @notice emitted when whitelist is disabled
+    event WhitelistDisabled();
+
     /// @notice thrown when an invalid address is supplied
     error InvalidAddress();
     /// @notice thrown when DXI token address already set
