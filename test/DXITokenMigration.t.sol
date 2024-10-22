@@ -61,6 +61,10 @@ contract DXITokenMigrationTest is Test {
 
     function test_SetDXIToken(address dxi_) public {
         vm.assume(dxi_ != address(0));
+
+        vm.expectEmit();
+        emit IDXITokenMigration.DXITokenAdded(dxi_);
+
         migrator.setDXIToken(dxi_);
 
         assertEq(address(migrator.dxi()), address(dxi_));
@@ -101,6 +105,9 @@ contract DXITokenMigrationTest is Test {
         dacxi.transfer(address(this), amount);
 
         dacxi.approve(address(migrator), amount);
+
+        vm.expectEmit();
+        emit IDXITokenMigration.Migrated(address(this), amount);
 
         migrator.migrate(amount);
 

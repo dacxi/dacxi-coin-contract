@@ -35,6 +35,8 @@ contract DXITokenMigration is Ownable, IDXITokenMigration {
         if (dxi_ == address(0)) revert InvalidAddress();
         if (address(dxi) != address(0)) revert DXITokenAddressAlreadySet();
 
+        emit DXITokenAdded(dxi_);
+
         dxi = IERC20(dxi_);
     }
 

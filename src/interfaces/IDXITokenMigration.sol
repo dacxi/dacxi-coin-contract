@@ -8,12 +8,16 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 /// @notice This contract migrated $DACXI to $DXI in 1:1 ration
 /// @custom:security-contact tech@dacxi.com
 interface IDXITokenMigration {
+    /// @notice emitted when the $DXI is set
+    /// @param dxi_ token to be added
+    event DXITokenAdded(address indexed dxi_);
+
     /// @notice emitted when an accounts migrate $DACXI to $DXI
     /// @param account account to be added
     /// @param amount amount to be migrated
     event Migrated(address indexed account, uint256 amount);
 
-    /// @notice emitted when an account is added within whitelist
+    /// @notice emitted when an account is added to whitelist
     /// @param account account to be added
     event AddressAddedToWhitelist(address indexed account);
 
