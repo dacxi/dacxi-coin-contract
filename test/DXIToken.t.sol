@@ -42,6 +42,9 @@ contract DXITokenTest is Test {
         vm.assume(amount < type(uint256).max / 2);
 
         vm.expectPartialRevert(IAccessControl.AccessControlUnauthorizedAccount.selector);
+        coin.mint(address(this), amount);
+
+        vm.expectPartialRevert(IAccessControl.AccessControlUnauthorizedAccount.selector);
         coin.mint(account, amount);
     }
 
