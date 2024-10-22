@@ -33,6 +33,10 @@ contract DXIToken is ERC20Permit, ERC20Burnable, AccessControlDefaultAdminRules,
 
     /// @inheritdoc IDXIToken
     function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) {
+        if (_msgSender() == owner()) {
+            revert OwnerCannotMint();
+        }
+
         _mint(to, amount);
     }
 

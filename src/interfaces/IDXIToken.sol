@@ -12,6 +12,9 @@ import {IAccessControlDefaultAdminRules} from
 /// @dev The contract allows for a 1-to-1 representation between $DACXI and $DXI and allows for additional emission based on hub and treasury requirements
 /// @custom:security-contact tech@dacxi.com
 interface IDXIToken is IERC20, IERC20Permit, IAccessControlDefaultAdminRules {
+    /// @notice thrown when the owners tries to mint tokens
+    error OwnerCannotMint();
+
     /// @notice mint token entrypoint for the emission manager contract
     /// @param to account to receive newly minted tokens
     /// @param amount amount to mint

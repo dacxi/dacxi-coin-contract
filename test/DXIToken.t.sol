@@ -48,6 +48,15 @@ contract DXITokenTest is Test {
         coin.mint(account, amount);
     }
 
+    function test_MintRevertIfAdmin(uint256 amount) public {
+        vm.assume(amount < type(uint256).max / 2);
+
+        coin.grantRole(coin.MINTER_ROLE(), address(this));
+
+        vm.expectPartialRevert(IDXIToken.OwnerCannotMint.selector);
+        coin.mint(address(this), amount);
+    }
+
     function test_Mint(address account, uint256 amount) public cleanAddress(account) {
         vm.assume(amount < type(uint256).max / 2);
 
