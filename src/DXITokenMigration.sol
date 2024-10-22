@@ -35,6 +35,8 @@ contract DXITokenMigration is Ownable, IDXITokenMigration {
         if (dxi_ == address(0)) revert InvalidAddress();
         if (address(dxi) != address(0)) revert DXITokenAddressAlreadySet();
 
+        emit DXITokenAdded(dxi_);
+
         dxi = IERC20(dxi_);
     }
 
@@ -51,11 +53,15 @@ contract DXITokenMigration is Ownable, IDXITokenMigration {
 
     /// @inheritdoc IDXITokenMigration
     function addToWhitelist(address account) external onlyOwner {
+        emit AddressAddedToWhitelist(account);
+
         whitelist[account] = true;
     }
 
     /// @inheritdoc IDXITokenMigration
     function removeFromWhitelist(address account) external onlyOwner {
+        emit AddressRemovedFromWhitelist(account);
+
         whitelist[account] = false;
     }
 
@@ -66,6 +72,8 @@ contract DXITokenMigration is Ownable, IDXITokenMigration {
 
     /// @inheritdoc IDXITokenMigration
     function disableWhitelist() external onlyOwner {
+        emit WhitelistDisabled();
+
         isWhitelistEnabled = false;
 
         renounceOwnership();

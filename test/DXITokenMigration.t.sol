@@ -53,14 +53,12 @@ contract DXITokenMigrationTest is Test {
         migrator_ = new DXITokenMigration(address(0));
     }
 
-    function test_SetDXIToken() public {
-        migrator.setDXIToken(address(dxi));
-
-        assertEq(address(migrator.dxi()), address(dxi));
-    }
-
     function test_SetDXIToken(address dxi_) public {
         vm.assume(dxi_ != address(0));
+
+        vm.expectEmit();
+        emit IDXITokenMigration.DXITokenAdded(dxi_);
+
         migrator.setDXIToken(dxi_);
 
         assertEq(address(migrator.dxi()), address(dxi_));
@@ -102,6 +100,9 @@ contract DXITokenMigrationTest is Test {
 
         dacxi.approve(address(migrator), amount);
 
+        vm.expectEmit();
+        emit IDXITokenMigration.Migrated(address(this), amount);
+
         migrator.migrate(amount);
 
         assertEq(dxi.balanceOf(address(this)), amount);
@@ -115,6 +116,9 @@ contract DXITokenMigrationTest is Test {
         dacxi.transfer(address(this), totalSupply);
 
         dacxi.approve(address(migrator), totalSupply);
+
+        vm.expectEmit();
+        emit IDXITokenMigration.Migrated(address(this), totalSupply);
 
         migrator.migrate(totalSupply);
 
@@ -134,6 +138,9 @@ contract DXITokenMigrationTest is Test {
 
         dacxi.approve(address(migrator), amount * interactions);
         for (uint8 i = 0; i < interactions; i++) {
+            vm.expectEmit();
+            emit IDXITokenMigration.Migrated(address(this), amount);
+
             migrator.migrate(amount);
 
             // advance in time
@@ -211,11 +218,15 @@ contract DXITokenMigrationTest is Test {
 
         vm.startPrank(account);
         dacxi.approve(address(migrator), amount);
+        vm.expectEmit();
+        emit IDXITokenMigration.Migrated(account, amount);
         migrator.migrate(amount);
         vm.stopPrank();
 
         vm.startPrank(account2);
         dacxi.approve(address(migrator), amount);
+        vm.expectEmit();
+        emit IDXITokenMigration.Migrated(account2, amount);
         migrator.migrate(amount);
         vm.stopPrank();
 
@@ -253,16 +264,22 @@ contract DXITokenMigrationTest is Test {
         // --- start migration ---
         vm.startPrank(account);
         dacxi.approve(address(migrator), amount);
+        vm.expectEmit();
+        emit IDXITokenMigration.Migrated(account, amount);
         migrator.migrate(amount);
         vm.stopPrank();
 
         vm.startPrank(account2);
         dacxi.approve(address(migrator), amount);
+        vm.expectEmit();
+        emit IDXITokenMigration.Migrated(account2, amount);
         migrator.migrate(amount);
         vm.stopPrank();
 
         vm.startPrank(account3);
         dacxi.approve(address(migrator), dacxi.totalSupply() - (amount * 2));
+        vm.expectEmit();
+        emit IDXITokenMigration.Migrated(account3, dacxi.totalSupply() - (amount * 2));
         migrator.migrate(dacxi.totalSupply() - (amount * 2));
         vm.stopPrank();
 
@@ -288,6 +305,9 @@ contract DXITokenMigrationTest is Test {
     function test_IsInWhitelist(address account, address account2) public {
         vm.assume(account != account2);
 
+        vm.expectEmit();
+        emit IDXITokenMigration.AddressAddedToWhitelist(account);
+
         migrator.addToWhitelist(account);
 
         assertTrue(migrator.isInWhitelist(account));
@@ -296,6 +316,9 @@ contract DXITokenMigrationTest is Test {
 
     function test_CanAddAccountToWhitelistMultipleTimes(address account, address account2) public {
         vm.assume(account != account2);
+
+        vm.expectEmit();
+        emit IDXITokenMigration.AddressAddedToWhitelist(account);
 
         migrator.addToWhitelist(account);
 
@@ -311,7 +334,14 @@ contract DXITokenMigrationTest is Test {
     function test_CanAddMultipleAccountToWhitelist(address account, address account2, address account3) public {
         vm.assume(account != account2 && account2 != account3 && account != account3);
 
+        vm.expectEmit();
+        emit IDXITokenMigration.AddressAddedToWhitelist(account);
+
         migrator.addToWhitelist(account);
+
+        vm.expectEmit();
+        emit IDXITokenMigration.AddressAddedToWhitelist(account2);
+
         migrator.addToWhitelist(account2);
 
         assertTrue(migrator.isInWhitelist(account));
@@ -337,6 +367,9 @@ contract DXITokenMigrationTest is Test {
         assertTrue(migrator.isInWhitelist(account));
         assertFalse(migrator.isInWhitelist(account2));
 
+        vm.expectEmit();
+        emit IDXITokenMigration.AddressRemovedFromWhitelist(account);
+
         migrator.removeFromWhitelist(account);
 
         assertFalse(migrator.isInWhitelist(account));
@@ -345,6 +378,9 @@ contract DXITokenMigrationTest is Test {
 
     function test_NothingHappensWhenRemovingFromWhitelistANonWhitelistedddress(address account) public {
         assertFalse(migrator.isInWhitelist(account));
+
+        vm.expectEmit();
+        emit IDXITokenMigration.AddressRemovedFromWhitelist(account);
 
         migrator.removeFromWhitelist(account);
 

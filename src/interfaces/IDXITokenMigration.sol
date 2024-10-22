@@ -8,17 +8,35 @@ import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 /// @notice This contract migrated $DACXI to $DXI in 1:1 ration
 /// @custom:security-contact tech@dacxi.com
 interface IDXITokenMigration {
+    /// @notice emitted when the $DXI is set
+    /// @param dxi_ token to be added
+    event DXITokenAdded(address indexed dxi_);
+
     /// @notice emitted when an accounts migrate $DACXI to $DXI
     /// @param account account to be added
     /// @param amount amount to be migrated
     event Migrated(address indexed account, uint256 amount);
 
+    /// @notice emitted when an account is added to whitelist
+    /// @param account account to be added
+    event AddressAddedToWhitelist(address indexed account);
+
+    /// @notice emitted when an account is removed from whitelist
+    /// @param account account to be removed
+    event AddressRemovedFromWhitelist(address indexed account);
+
+    /// @notice emitted when whitelist is disabled
+    event WhitelistDisabled();
+
     /// @notice thrown when an invalid address is supplied
     error InvalidAddress();
+
     /// @notice thrown when DXI token address already set
     error DXITokenAddressAlreadySet();
+
     /// @notice thrown when DXI token address is not set
     error DXITokenAddressNotSet();
+
     /// @notice thrown when the address calling `migrate` is not in the whitelist
     /// @dev only thrown when the whitelist is enabled
     error AddressNotInWhitelist();
