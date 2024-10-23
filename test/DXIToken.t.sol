@@ -48,17 +48,35 @@ contract DXITokenTest is Test {
         coin.mint(account, amount);
     }
 
-    function test_Mint(address account, uint256 amount) public cleanAddress(account) {
+    function test_MintRevertIfNoCapIsSetted(address account, uint256 amount) public cleanAddress(account) {
         vm.assume(amount < type(uint256).max / 2);
+        vm.assume(amount > 0);
 
         coin.grantRole(coin.MINTER_ROLE(), account);
 
         skip(1);
 
         vm.prank(account);
+        vm.expectPartialRevert(IDXIToken.MaxMintExceeded.selector);
         coin.mint(account, amount);
-        assertEq(coin.totalSupply(), INITIAL_SUPPLY + amount);
-        assertEq(coin.balanceOf(account), amount);
+    }
+
+    function test_Mint(address account) public cleanAddress(account) {
+        coin.grantRole(coin.CAP_MANAGER_ROLE(), address(this));
+        coin.grantRole(coin.MINTER_ROLE(), account);
+
+        skip(1);
+
+        vm.expectEmit();
+        emit IDXIToken.MintCapUpdated(0, 25e18);
+        coin.updateMintCap(25e18);
+
+        skip(1);
+
+        vm.prank(account);
+        coin.mint(account, 25e18);
+        assertEq(coin.totalSupply(), INITIAL_SUPPLY + 25e18);
+        assertEq(coin.balanceOf(account), 25e18);
     }
 
     function test_Burn(address account, uint256 amount) public cleanAddress(account) {
