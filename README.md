@@ -17,10 +17,19 @@ An external smart contract is responsible to control the DXI inflation through t
 The inflation smart contract will be developed and attached to the DXIToken in some future. Until than
 the supply will stay 10,000,000,000 DXI.
 
-Although rules for the DXI inflation can be updated by attaching a new inflation external smart contract,
-Dacxi Chain team agrees that the core contracts and protocol of the Dacxi Chain ecosystem must be immutable. 
-The DXIToken inflation rules can become immutable in the future by renouncing the owership of the contract 
-(ADMIN role) which will permanently disable the ability to attach a new inflation extenrnal smart contract.
+Note the `mint()` method has an internal safety system that avoids the MINTER to mint unlimited amount 
+of tokens, see `updateMintCap()`. The DXIToken mint cap can be set up according the rules defined by 
+the new external inflation smart contract that will be attached to it. The mint cap must allow the 
+external inflation smart contract to properly mint new token over time, but at the same time will 
+avoid it to mint unlimited amount of tokens.
+
+#### About Immutability
+
+Although the rules for the DXI inflation can be updated by attaching a new inflation 
+external smart contract in the future, Dacxi Chain team agrees that the core contracts and protocol of 
+the Dacxi Chain ecosystem must be immutable. The DXIToken inflation rules can become immutable in the future 
+by renouncing the owership of the DXIToken contract (ADMIN role) which will permanently disable the ability 
+to attach a new inflation external smart contract.
 
 ### DXITokenMigration
 
