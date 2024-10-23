@@ -20,8 +20,18 @@ contract DXIToken is ERC20Permit, ERC20Burnable, AccessControlDefaultAdminRules,
 
     /// @inheritdoc IDXIToken
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+
+    /// @inheritdoc IDXIToken
+    bytes32 public constant CAP_MANAGER_ROLE = keccak256("CAP_MANAGER_ROLE");
+
     /// @inheritdoc IDXIToken
     uint256 public constant INITIAL_SUPPLY = 10e9 * 1e18;
+
+    /// @inheritdoc IDXIToken
+    uint256 public mintPerSecondCap = 0;
+
+    /// @inheritdoc IDXIToken
+    uint256 public lastMint;
 
     constructor(address initialMintDestination, address initialDefaultAdmin)
         ERC20(_NAME, _SYMBOL)
@@ -29,11 +39,27 @@ contract DXIToken is ERC20Permit, ERC20Burnable, AccessControlDefaultAdminRules,
         AccessControlDefaultAdminRules(5 days, initialDefaultAdmin)
     {
         _mint(initialMintDestination, INITIAL_SUPPLY);
+
+        // we can safely set lastMint here since the emission manager is initialised after the token and won't hit the cap.
+        lastMint = block.timestamp;
     }
 
     /// @inheritdoc IDXIToken
     function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) {
+        uint256 timeElapsedSinceLastMint = block.timestamp - lastMint;
+        uint256 maxMint = timeElapsedSinceLastMint * mintPerSecondCap;
+        //slither-disable-next-line timestamp
+        if (amount > maxMint) revert MaxMintExceeded(maxMint, amount);
+
+        lastMint = block.timestamp;
         _mint(to, amount);
+    }
+
+    /// @inheritdoc IDXIToken
+    function updateMintCap(uint256 newCap) external onlyRole(CAP_MANAGER_ROLE) {
+        emit MintCapUpdated(mintPerSecondCap, newCap);
+
+        mintPerSecondCap = newCap;
     }
 
     ///

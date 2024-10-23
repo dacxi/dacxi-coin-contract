@@ -4,6 +4,7 @@ pragma solidity ^0.8.27;
 import {Test, console} from "forge-std/Test.sol";
 import {DXIToken} from "../src/DXIToken.sol";
 import {IDXIToken} from "../src/interfaces/IDXIToken.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IAccessControl} from "@openzeppelin/contracts/access/IAccessControl.sol";
 import {IAccessControlDefaultAdminRules} from
     "@openzeppelin/contracts/access/extensions/IAccessControlDefaultAdminRules.sol";
@@ -48,17 +49,98 @@ contract DXITokenTest is Test {
         coin.mint(account, amount);
     }
 
-    function test_Mint(address account, uint256 amount) public cleanAddress(account) {
+    function test_MintRevertIfNoCapIsSetted(address account, uint256 amount, uint8 timePassed)
+        public
+        cleanAddress(account)
+    {
         vm.assume(amount < type(uint256).max / 2);
+        vm.assume(amount > 0);
+        vm.assume(timePassed > 0);
 
         coin.grantRole(coin.MINTER_ROLE(), account);
+
+        skip(timePassed);
+
+        vm.prank(account);
+        vm.expectPartialRevert(IDXIToken.MaxMintExceeded.selector);
+        coin.mint(account, amount);
+    }
+
+    function test_MintRevertIfAmountExceedsCap(address account, uint256 newCap, uint256 amount)
+        public
+        cleanAddress(account)
+    {
+        vm.assume(newCap < type(uint256).max / 2);
+        vm.assume(amount > newCap && amount < type(uint256).max / 2);
+
+        coin.grantRole(coin.CAP_MANAGER_ROLE(), address(this));
+        coin.grantRole(coin.MINTER_ROLE(), account);
+
+        vm.expectEmit();
+        emit IDXIToken.MintCapUpdated(0, newCap);
+        coin.updateMintCap(newCap);
 
         skip(1);
 
         vm.prank(account);
+        vm.expectPartialRevert(IDXIToken.MaxMintExceeded.selector);
         coin.mint(account, amount);
+    }
+
+    function test_Mint(address account, uint256 amount) public cleanAddress(account) {
+        vm.assume(amount > 0 && amount < type(uint256).max / 2);
+
+        coin.grantRole(coin.CAP_MANAGER_ROLE(), address(this));
+        coin.grantRole(coin.MINTER_ROLE(), account);
+
+        vm.expectEmit();
+        emit IDXIToken.MintCapUpdated(0, amount);
+        coin.updateMintCap(amount);
+
+        skip(1);
+
+        vm.prank(account);
+        vm.expectEmit();
+        emit IERC20.Transfer(address(0), account, amount);
+        coin.mint(account, amount);
+
         assertEq(coin.totalSupply(), INITIAL_SUPPLY + amount);
         assertEq(coin.balanceOf(account), amount);
+    }
+
+    function test_CanMintOncePerSecond(address account, uint256 amount) public cleanAddress(account) {
+        vm.assume(amount > 0 && amount < type(uint256).max / 2);
+
+        coin.grantRole(coin.CAP_MANAGER_ROLE(), address(this));
+        coin.grantRole(coin.MINTER_ROLE(), account);
+
+        console.log(block.timestamp);
+
+        vm.expectEmit();
+        emit IDXIToken.MintCapUpdated(0, amount);
+        coin.updateMintCap(amount);
+
+        vm.startPrank(account);
+
+        skip(1);
+        coin.mint(account, amount / 3);
+        vm.expectPartialRevert(IDXIToken.MaxMintExceeded.selector);
+        coin.mint(account, 1);
+
+        skip(1);
+        coin.mint(account, amount / 2);
+        vm.expectPartialRevert(IDXIToken.MaxMintExceeded.selector);
+        coin.mint(account, 1);
+
+        skip(1);
+        coin.mint(account, amount);
+        vm.expectPartialRevert(IDXIToken.MaxMintExceeded.selector);
+        coin.mint(account, 1);
+
+        vm.stopPrank();
+
+        assertEq(coin.totalSupply(), INITIAL_SUPPLY + (amount / 3) + (amount / 2) + amount);
+        assertEq(coin.balanceOf(account), (amount / 3) + (amount / 2) + amount);
     }
 
     function test_Burn(address account, uint256 amount) public cleanAddress(account) {
