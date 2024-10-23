@@ -49,7 +49,10 @@ contract DXITokenTest is Test {
         coin.mint(account, amount);
     }
 
-    function test_MintRevertIfNoCapIsSetted(address account, uint256 amount, uint8 timePassed) public cleanAddress(account) {
+    function test_MintRevertIfNoCapIsSetted(address account, uint256 amount, uint8 timePassed)
+        public
+        cleanAddress(account)
+    {
         vm.assume(amount < type(uint256).max / 2);
         vm.assume(amount > 0);
         vm.assume(timePassed > 0);
@@ -63,7 +66,10 @@ contract DXITokenTest is Test {
         coin.mint(account, amount);
     }
 
-    function test_MintRevertIfAmountExceedsCap(address account, uint256 newCap, uint256 amount) public cleanAddress(account) {
+    function test_MintRevertIfAmountExceedsCap(address account, uint256 newCap, uint256 amount)
+        public
+        cleanAddress(account)
+    {
         vm.assume(newCap < type(uint256).max / 2);
         vm.assume(amount > newCap && amount < type(uint256).max / 2);
 
@@ -73,7 +79,7 @@ contract DXITokenTest is Test {
         vm.expectEmit();
         emit IDXIToken.MintCapUpdated(0, newCap);
         coin.updateMintCap(newCap);
-    
+
         skip(1);
 
         vm.prank(account);
