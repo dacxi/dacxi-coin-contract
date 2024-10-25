@@ -121,12 +121,12 @@ contract DXITokenTest is Test {
         coin.mint(account, amount);
     }
 
-    function test_MintRevertIfAmountExceedsCap(address account, uint72 mintCap, uint256 amount)
+    function test_MintRevertIfAmountExceedsCap(address account, uint72 mintCap, uint256 amount, uint8 timePassed)
         public
         cleanAddress(account)
     {
         vm.assume(mintCap < coin.MAX_MINT_CAP());
-        vm.assume(amount > mintCap && amount < type(uint256).max / 2);
+        vm.assume(amount > (uint256(mintCap) * timePassed) && amount < type(uint256).max / 2);
 
         coin.grantRole(coin.CAP_MANAGER_ROLE(), address(this));
         coin.grantRole(coin.MINTER_ROLE(), account);
@@ -135,7 +135,7 @@ contract DXITokenTest is Test {
         emit IDXIToken.MintCapUpdated(0, mintCap);
         coin.updateMintCap(mintCap);
 
-        skip(1);
+        skip(timePassed);
 
         vm.prank(account);
         vm.expectPartialRevert(IDXIToken.MaxMintExceeded.selector);
