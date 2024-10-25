@@ -50,7 +50,10 @@ contract DXITokenTest is Test {
         coin.updateMintCap(newCap);
     }
 
-    function test_UpdateMintCapRevertsWhenExceedsMaxMintCap(address account, uint72 newCap) public cleanAddress(account) {
+    function test_UpdateMintCapRevertsWhenExceedsMaxMintCap(address account, uint72 newCap)
+        public
+        cleanAddress(account)
+    {
         vm.assume(newCap > coin.MAX_MINT_CAP());
 
         coin.grantRole(coin.CAP_MANAGER_ROLE(), address(this));
@@ -60,7 +63,13 @@ contract DXITokenTest is Test {
         coin.updateMintCap(newCap);
     }
 
-    function test_CanUpdateMintCapMultipleTimes(address account, uint72 newCap, uint72 newCap2, uint72 newCap3, uint8 timePassed) public cleanAddress(account) {
+    function test_CanUpdateMintCapMultipleTimes(
+        address account,
+        uint72 newCap,
+        uint72 newCap2,
+        uint72 newCap3,
+        uint8 timePassed
+    ) public cleanAddress(account) {
         vm.assume(newCap <= coin.MAX_MINT_CAP());
         vm.assume(newCap2 <= coin.MAX_MINT_CAP());
         vm.assume(newCap3 <= coin.MAX_MINT_CAP());
@@ -71,7 +80,7 @@ contract DXITokenTest is Test {
         vm.expectEmit();
         emit IDXIToken.MintCapUpdated(0, newCap);
         coin.updateMintCap(newCap);
-    
+
         skip(timePassed);
 
         vm.expectEmit();
@@ -112,7 +121,10 @@ contract DXITokenTest is Test {
         coin.mint(account, amount);
     }
 
-    function test_MintRevertIfAmountExceedsCap(address account, uint72 mintCap, uint256 amount) public cleanAddress(account) {
+    function test_MintRevertIfAmountExceedsCap(address account, uint72 mintCap, uint256 amount)
+        public
+        cleanAddress(account)
+    {
         vm.assume(mintCap < coin.MAX_MINT_CAP());
         vm.assume(amount > mintCap && amount < type(uint256).max / 2);
 
@@ -130,7 +142,10 @@ contract DXITokenTest is Test {
         coin.mint(account, amount);
     }
 
-    function test_Mint(address account, uint256 amount, uint72 mintCap, uint8 timePassed) public cleanAddress(account) {
+    function test_Mint(address account, uint256 amount, uint72 mintCap, uint8 timePassed)
+        public
+        cleanAddress(account)
+    {
         vm.assume(mintCap > 0 && mintCap <= coin.MAX_MINT_CAP());
         vm.assume(amount > 0 && amount <= (uint256(mintCap) * timePassed));
 

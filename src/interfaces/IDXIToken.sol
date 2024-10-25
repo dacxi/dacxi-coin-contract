@@ -19,7 +19,7 @@ interface IDXIToken is IERC20, IERC20Permit, IAccessControlDefaultAdminRules {
 
     /// @notice thrown when the mint per second cap exceeds the max allowed value
     /// @param maxMintCap the allowed mint per second cap
-    /// @param mintCapRequested the mint cap requested 
+    /// @param mintCapRequested the mint cap requested
     error MaxMintCapExceeded(uint72 maxMintCap, uint72 mintCapRequested);
 
     /// @notice thrown when the mint cap is exceeded
