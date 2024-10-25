@@ -62,10 +62,6 @@ contract DXIToken is ERC20Permit, ERC20Burnable, AccessControlDefaultAdminRules,
         mintPerSecondCap = newCap;
     }
 
-    ///
-    /// Override AccessControlDefaultAdminRules role management
-    ///
-
     /**
      * @dev See {ERC20Permit-nonces}.
      */
