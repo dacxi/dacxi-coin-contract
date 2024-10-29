@@ -24,7 +24,7 @@ allowing the emission smart contract to properly mint new token over time.
 
 Although the supply expansion rules can be updated in the future by attaching a new emission smart contract, 
 DXIToken has immutable safety validations ensuring that there will never be the possibility to mint more 
-than 47 DXI tokens per second, regardless the emission smart contract attached to it.
+than 45 DXI tokens per second, regardless the emission smart contract attached to it.
 
 #### About Immutability
 

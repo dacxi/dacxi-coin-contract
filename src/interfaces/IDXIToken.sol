@@ -49,7 +49,7 @@ interface IDXIToken is IERC20, IERC20Permit, IAccessControlDefaultAdminRules {
     function INITIAL_SUPPLY() external view returns (uint256);
 
     /// @notice Returns the max mint per second allowed to be set
-    /// @dev It represents a inflation of a most equal to 15% at the first year
+    /// @dev It represents a inflation of a most equal to ~14,20% at the first year
     //slither-disable-next-line naming-convention
     function MAX_MINT_CAP() external view returns (uint72);
 

@@ -28,8 +28,8 @@ contract DXIToken is ERC20Permit, ERC20Burnable, AccessControlDefaultAdminRules,
     uint256 public constant INITIAL_SUPPLY = 10e9 * 1e18;
 
     /// @inheritdoc IDXIToken
-    /// @dev 47 DXI tokens per second. Will limit emission up to 15% in the first year.
-    uint72 public constant MAX_MINT_CAP = 47 * 1e18;
+    /// @dev 45 DXI tokens per second. Will limit emission up to ~14,20% in the first year.
+    uint72 public constant MAX_MINT_CAP = 45 * 1e18;
 
     /// @inheritdoc IDXIToken
     uint72 public mintPerSecondCap = 0;
