@@ -11,25 +11,27 @@ DXIToken is a standard ERC20 and EIP2612 ( `permit()` ) functionality token.
 It's also a burnable token. Token holders can burn their DXI through the `burn` method.
 
 It's initial supply is 10,000,000,000 DXI and has no supply cap (although this can
-be changed in the future).
+be changed in the future through the emission smart contract).
 
-An external smart contract is responsible to control the DXI inflation through the `mint()` method.
-The inflation smart contract will be developed and attached to the DXIToken in some future. Until than
-the supply will stay 10,000,000,000 DXI.
+An external smart contract is responsible to control the DXI emission through the `mint()` method.
+The emission smart contract will be developed and attached to the DXIToken in the future. Until then
+the supply will stay fixed at 10,000,000,000 DXI.
 
 Note that the `mint()` method has an internal safety system that avoids the MINTER to mint unlimited
-amount of tokens, see `updateMintCap()`. The DXIToken mint cap can be set up according to the rules
-defined by the new inflation external smart contract that will be attached to it. The mint cap must
-allow the inflation smart contract to properly mint new token over time, but at the same time 
-will avoid it to mint unlimited amount of tokens. 
+amount of tokens (see `updateMintCap()`). The DXIToken's mint cap (the number of DXI tokens that can be
+minted per second) must be set according to the external emission smart contract attached to it,
+allowing the emission smart contract to properly mint new token over time.
+
+Although the supply expansion rules can be updated in the future by attaching a new emission smart contract, 
+DXIToken has immutable safety validations ensuring that there will never be the possibility to mint more 
+than 45 DXI tokens per second, regardless the emission smart contract attached to it.
 
 #### About Immutability
 
-Although the rules for the DXI inflation can be updated by attaching a new inflation
-external smart contract in the future, Dacxi Chain team agrees that the core contracts and protocol of
-the Dacxi Chain ecosystem must be immutable. The DXIToken inflation rules can become immutable in the future
-by renouncing the owership of the DXIToken contract (ADMIN role) which will permanently disable the ability
-to attach a new inflation external smart contract.
+Dacxi Chain team believes that the core contracts and protocols of the Dacxi Chain ecosystem must be immutable. 
+The DXIToken supply expansion rules can become immutable by renouncing the owership of the DXIToken contract 
+(renouncing the ADMIN role) which will permanently remove the ability to attach new emission smart contracts
+to the DXIToken.
 
 ### DXITokenMigration
 

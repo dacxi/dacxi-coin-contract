@@ -39,6 +39,61 @@ contract DXITokenTest is Test {
         assertEq(coin.totalSupply(), INITIAL_SUPPLY);
     }
 
+    function test_UpdateMintCap(address account, uint72 newCap) public cleanAddress(account) {
+        vm.assume(newCap <= coin.MAX_MINT_CAP());
+
+        coin.grantRole(coin.CAP_MANAGER_ROLE(), address(this));
+        coin.grantRole(coin.MINTER_ROLE(), account);
+
+        vm.expectEmit();
+        emit IDXIToken.MintCapUpdated(0, newCap);
+        coin.updateMintCap(newCap);
+    }
+
+    function test_UpdateMintCapRevertsWhenExceedsMaxMintCap(address account, uint72 newCap)
+        public
+        cleanAddress(account)
+    {
+        vm.assume(newCap > coin.MAX_MINT_CAP());
+
+        coin.grantRole(coin.CAP_MANAGER_ROLE(), address(this));
+        coin.grantRole(coin.MINTER_ROLE(), account);
+
+        vm.expectPartialRevert(IDXIToken.MaxMintCapExceeded.selector);
+        coin.updateMintCap(newCap);
+    }
+
+    function test_CanUpdateMintCapMultipleTimes(
+        address account,
+        uint72 newCap,
+        uint72 newCap2,
+        uint72 newCap3,
+        uint8 timePassed
+    ) public cleanAddress(account) {
+        vm.assume(newCap <= coin.MAX_MINT_CAP());
+        vm.assume(newCap2 <= coin.MAX_MINT_CAP());
+        vm.assume(newCap3 <= coin.MAX_MINT_CAP());
+
+        coin.grantRole(coin.CAP_MANAGER_ROLE(), address(this));
+        coin.grantRole(coin.MINTER_ROLE(), account);
+
+        vm.expectEmit();
+        emit IDXIToken.MintCapUpdated(0, newCap);
+        coin.updateMintCap(newCap);
+
+        skip(timePassed);
+
+        vm.expectEmit();
+        emit IDXIToken.MintCapUpdated(newCap, newCap2);
+        coin.updateMintCap(newCap2);
+
+        skip(timePassed);
+
+        vm.expectEmit();
+        emit IDXIToken.MintCapUpdated(newCap2, newCap3);
+        coin.updateMintCap(newCap3);
+    }
+
     function test_MintRevertWithoutPermission(address account, uint256 amount) public {
         vm.assume(amount < type(uint256).max / 2);
 
@@ -49,7 +104,7 @@ contract DXITokenTest is Test {
         coin.mint(account, amount);
     }
 
-    function test_MintRevertIfNoCapIsSetted(address account, uint256 amount, uint8 timePassed)
+    function test_MintRevertIfNoCapIsSet(address account, uint256 amount, uint8 timePassed)
         public
         cleanAddress(account)
     {
@@ -66,38 +121,42 @@ contract DXITokenTest is Test {
         coin.mint(account, amount);
     }
 
-    function test_MintRevertIfAmountExceedsCap(address account, uint256 newCap, uint256 amount)
+    function test_MintRevertIfAmountExceedsCap(address account, uint72 mintCap, uint256 amount, uint8 timePassed)
         public
         cleanAddress(account)
     {
-        vm.assume(newCap < type(uint256).max / 2);
-        vm.assume(amount > newCap && amount < type(uint256).max / 2);
+        vm.assume(mintCap < coin.MAX_MINT_CAP());
+        vm.assume(amount > (uint256(mintCap) * timePassed) && amount < type(uint256).max / 2);
 
         coin.grantRole(coin.CAP_MANAGER_ROLE(), address(this));
         coin.grantRole(coin.MINTER_ROLE(), account);
 
         vm.expectEmit();
-        emit IDXIToken.MintCapUpdated(0, newCap);
-        coin.updateMintCap(newCap);
+        emit IDXIToken.MintCapUpdated(0, mintCap);
+        coin.updateMintCap(mintCap);
 
-        skip(1);
+        skip(timePassed);
 
         vm.prank(account);
         vm.expectPartialRevert(IDXIToken.MaxMintExceeded.selector);
         coin.mint(account, amount);
     }
 
-    function test_Mint(address account, uint256 amount) public cleanAddress(account) {
-        vm.assume(amount > 0 && amount < type(uint256).max / 2);
+    function test_Mint(address account, uint256 amount, uint72 mintCap, uint8 timePassed)
+        public
+        cleanAddress(account)
+    {
+        vm.assume(mintCap > 0 && mintCap <= coin.MAX_MINT_CAP());
+        vm.assume(amount > 0 && amount <= (uint256(mintCap) * timePassed));
 
         coin.grantRole(coin.CAP_MANAGER_ROLE(), address(this));
         coin.grantRole(coin.MINTER_ROLE(), account);
 
         vm.expectEmit();
-        emit IDXIToken.MintCapUpdated(0, amount);
-        coin.updateMintCap(amount);
+        emit IDXIToken.MintCapUpdated(0, mintCap);
+        coin.updateMintCap(mintCap);
 
-        skip(1);
+        skip(timePassed);
 
         vm.prank(account);
         vm.expectEmit();
@@ -108,8 +167,9 @@ contract DXITokenTest is Test {
         assertEq(coin.balanceOf(account), amount);
     }
 
-    function test_CanMintOncePerSecond(address account, uint256 amount) public cleanAddress(account) {
-        vm.assume(amount > 0 && amount < type(uint256).max / 2);
+    function test_CanMintOncePerSecond(address account, uint256 amount, uint72 mintCap) public cleanAddress(account) {
+        vm.assume(mintCap > 0 && mintCap <= coin.MAX_MINT_CAP());
+        vm.assume(amount > 0 && amount <= mintCap);
 
         coin.grantRole(coin.CAP_MANAGER_ROLE(), address(this));
         coin.grantRole(coin.MINTER_ROLE(), account);
@@ -117,8 +177,8 @@ contract DXITokenTest is Test {
         console.log(block.timestamp);
 
         vm.expectEmit();
-        emit IDXIToken.MintCapUpdated(0, amount);
-        coin.updateMintCap(amount);
+        emit IDXIToken.MintCapUpdated(0, mintCap);
+        coin.updateMintCap(mintCap);
 
         vm.startPrank(account);
 
