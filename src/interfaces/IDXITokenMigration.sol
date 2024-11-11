@@ -105,7 +105,4 @@ interface IDXITokenMigration {
 
     /// @notice Return when the admin can finalize the whitelist disable process
     function whitelistDisableTimestamp() external view returns (uint256);
-
-    /// @dev See {Ownable-renounceOwnership}.
-    function renounceOwnership() external;
 }
