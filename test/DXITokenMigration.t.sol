@@ -409,8 +409,8 @@ contract DXITokenMigrationTest is Test {
         migrator.removeFromWhitelist(account);
     }
 
-    function test_RenouncesTheOwnershipWhenDisableWhitelist(address account) public {
-        migrator.disableWhitelist();
+    function test_RenouncesTheOwnership(address account) public {
+        migrator.renounceOwnership();
 
         assertNotEq(migrator.owner(), address(this));
 

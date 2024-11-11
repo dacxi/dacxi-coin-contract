@@ -80,8 +80,6 @@ contract DXITokenMigration is Ownable, IDXITokenMigration {
         emit WhitelistDisabled();
 
         isWhitelistEnabled = false;
-
-        renounceOwnership();
     }
 
     /// @dev Check if an address is in the whitelist
