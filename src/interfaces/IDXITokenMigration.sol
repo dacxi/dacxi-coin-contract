@@ -25,6 +25,12 @@ interface IDXITokenMigration {
     /// @notice emitted when whitelist is disabled
     event WhitelistDisabled();
 
+    /// @notice emitted when disable whitelist process started
+    event WhitelistDisableInitiated(uint256 timestamp);
+
+    /// @notice emitted when disable whitelist process canceled
+    event WhitelistDisableCancelled();
+
     /// @notice thrown when an invalid address is supplied
     error InvalidAddress();
 
@@ -37,6 +43,15 @@ interface IDXITokenMigration {
     /// @notice thrown when the address calling `migrate` is not in the whitelist
     /// @dev only thrown when the whitelist is enabled
     error AddressNotInWhitelist();
+
+    /// @notice thrown when whitelist disable was not initiated
+    error WhitelistDisabledNotInitiated();
+
+    /// @notice thrown when admin tries to finalize the whitelist disable before the delay
+    error WhitelistDisableEnforcedDelay(uint256 delay);
+
+    /// @notice thrown when whitelist is not disabled
+    error WhitelistNotDisabled();
 
     /// @notice Address of the DACXI token
     /// @return dacxi Address of the DACXI token
@@ -74,9 +89,23 @@ interface IDXITokenMigration {
     /// @notice Check if the sender address is in the whitelist
     function checkMyWhitelistStatus() external view returns (bool);
 
-    /// @notice Disable the whitelist. This action is permanent and cannot be reverted.
+    /// @notice Return if the whitelist is enabled or not
+    function isWhitelistEnabled() external view returns (bool);
+
+    /// @notice Starts the process to disable the whitelist
+    function initiateWhitelistDisable() external;
+
+    /// @notice Finalize the whitelist disable process. This action is permanent and cannot be reverted.
     /// @dev only the contract owner can disalbe the whitelist
     /// @dev Disabling the whitelist, make the migration to be permissionless
-    /// @dev Disabling the whitelist also renounces the owership of the contract make it immutable foverer
-    function disableWhitelist() external;
+    function finalizeWhitelistDisable() external;
+
+    /// @notice Cancel an ongoing process to disable the whitelist
+    function cancelWhitelistDisable() external;
+
+    /// @notice Return when the admin can finalize the whitelist disable process
+    function whitelistDisableTimestamp() external view returns (uint256);
+
+    /// @dev See {Ownable-renounceOwnership}.
+    function renounceOwnership() external;
 }

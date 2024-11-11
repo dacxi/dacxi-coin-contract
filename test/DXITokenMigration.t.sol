@@ -209,7 +209,9 @@ contract DXITokenMigrationTest is Test {
         vm.assume(account != address(0) && account2 != address(0));
         vm.assume(account != account2);
 
-        migrator.disableWhitelist();
+        migrator.initiateWhitelistDisable();
+        skip(5 days);
+        migrator.finalizeWhitelistDisable();
 
         vm.startPrank(DACXI_TREASURY);
         dacxi.transfer(account, amount);
@@ -236,14 +238,6 @@ contract DXITokenMigrationTest is Test {
         assertEq(dxi.balanceOf(account2), amount);
     }
 
-    function test_AnyoneCanMigrateMultipleTimesWhenWhitelistIsDisabled(
-        address account,
-        address account2,
-        uint256 amount
-    ) public {
-        // TODO
-    }
-
     function test_MigrateDacxiTotalSupplyWhenWhitelistIsDisabled(
         address account,
         address account2,
@@ -259,7 +253,9 @@ contract DXITokenMigrationTest is Test {
         dacxi.transfer(account3, dacxi.totalSupply() - (amount * 2));
         vm.stopPrank();
 
-        migrator.disableWhitelist();
+        migrator.initiateWhitelistDisable();
+        skip(5 days);
+        migrator.finalizeWhitelistDisable();
 
         // --- start migration ---
         vm.startPrank(account);
@@ -409,7 +405,107 @@ contract DXITokenMigrationTest is Test {
         migrator.removeFromWhitelist(account);
     }
 
+    function test_InitiateDisableWhitelistEmitsEvent() public {
+        vm.expectEmit();
+        emit IDXITokenMigration.WhitelistDisableInitiated(block.timestamp + 5 days);
+
+        migrator.initiateWhitelistDisable();
+        assertGt(migrator.whitelistDisableTimestamp(), 0);
+        assertTrue(migrator.isWhitelistEnabled());
+    }
+
+    function test_DisablingWhitelistCanBeFinalizedOnlyAfterDeadline(uint256 delay) public {
+        vm.assume(delay < 5 days);
+
+        migrator.initiateWhitelistDisable();
+        assertGt(migrator.whitelistDisableTimestamp(), 0);
+        assertTrue(migrator.isWhitelistEnabled());
+
+        skip(delay);
+
+        vm.expectPartialRevert(IDXITokenMigration.WhitelistDisableEnforcedDelay.selector);
+        migrator.finalizeWhitelistDisable();
+        assertTrue(migrator.isWhitelistEnabled());
+    }
+
+    function test_DisablingWhitelistCanBeFinalizedOnlyAfterStarted(uint256 delay) public {
+        vm.assume(delay >= 5 days);
+        vm.assume(delay < 365 days);
+
+        assertEq(migrator.whitelistDisableTimestamp(), 0);
+        assertTrue(migrator.isWhitelistEnabled());
+
+        skip(delay);
+
+        vm.expectRevert(IDXITokenMigration.WhitelistDisabledNotInitiated.selector);
+        migrator.finalizeWhitelistDisable();
+        assertTrue(migrator.isWhitelistEnabled());
+    }
+
+    function test_DisablingWhitelistCanBeCanceledBeforeDeadline(uint256 delay) public {
+        vm.assume(delay < 5 days);
+
+        migrator.initiateWhitelistDisable();
+        assertGt(migrator.whitelistDisableTimestamp(), 0);
+        assertTrue(migrator.isWhitelistEnabled());
+
+        skip(delay);
+
+        vm.expectEmit();
+        emit IDXITokenMigration.WhitelistDisableCancelled();
+
+        migrator.cancelWhitelistDisable();
+        assertEq(migrator.whitelistDisableTimestamp(), 0);
+        assertTrue(migrator.isWhitelistEnabled());
+    }
+
+    function test_DisablingWhitelistCanBeCanceledAfterDeadline(uint256 delay) public {
+        vm.assume(delay >= 5 days);
+        vm.assume(delay <= 365 days);
+
+        migrator.initiateWhitelistDisable();
+        assertGt(migrator.whitelistDisableTimestamp(), 0);
+        assertTrue(migrator.isWhitelistEnabled());
+
+        skip(delay);
+
+        vm.expectEmit();
+        emit IDXITokenMigration.WhitelistDisableCancelled();
+
+        migrator.cancelWhitelistDisable();
+        assertEq(migrator.whitelistDisableTimestamp(), 0);
+        assertTrue(migrator.isWhitelistEnabled());
+    }
+
+    function test_DisablingWhitelistCanBeCancelledOnlyAfterStarted(uint256 delay) public {
+        vm.assume(delay > 5 days);
+        vm.assume(delay < 365 days);
+
+        assertEq(migrator.whitelistDisableTimestamp(), 0);
+        assertTrue(migrator.isWhitelistEnabled());
+
+        skip(delay);
+
+        vm.expectRevert(IDXITokenMigration.WhitelistDisabledNotInitiated.selector);
+        migrator.cancelWhitelistDisable();
+        assertTrue(migrator.isWhitelistEnabled());
+    }
+
+    // --- Renounce ownership tests ---
+
+    function test_RenoucesOwnershipOnlyAfterDisablingWhitelist() public {
+        assertTrue(migrator.isWhitelistEnabled());
+
+        vm.expectRevert(IDXITokenMigration.WhitelistNotDisabled.selector);
+        migrator.renounceOwnership();
+    }
+
     function test_RenouncesTheOwnership(address account) public {
+        migrator.initiateWhitelistDisable();
+        skip(5 days);
+        migrator.finalizeWhitelistDisable();
+        skip(1);
+
         migrator.renounceOwnership();
 
         assertNotEq(migrator.owner(), address(this));
@@ -425,6 +521,12 @@ contract DXITokenMigrationTest is Test {
         migrator.setDXIToken(address(dxi));
 
         vm.expectPartialRevert(Ownable.OwnableUnauthorizedAccount.selector);
-        migrator.disableWhitelist();
+        migrator.initiateWhitelistDisable();
+
+        vm.expectPartialRevert(Ownable.OwnableUnauthorizedAccount.selector);
+        migrator.cancelWhitelistDisable();
+
+        vm.expectPartialRevert(Ownable.OwnableUnauthorizedAccount.selector);
+        migrator.finalizeWhitelistDisable();
     }
 }

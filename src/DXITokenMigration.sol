@@ -16,12 +16,15 @@ contract DXITokenMigration is Ownable, IDXITokenMigration {
 
     /// @inheritdoc IDXITokenMigration
     IERC20 public immutable dacxi;
+
     /// @inheritdoc IDXITokenMigration
     IERC20 public dxi;
 
     // --- Whitelist ---
-    bool private isWhitelistEnabled = true;
+    bool public isWhitelistEnabled = true;
     mapping(address => bool) private whitelist;
+    uint32 private constant WHITELIST_DISABLE_DELAY = 5 days;
+    uint256 public whitelistDisableTimestamp = 0;
 
     /// @param dacxi_ $DACXI contract address
     constructor(address dacxi_) Ownable(msg.sender) {
@@ -76,10 +79,38 @@ contract DXITokenMigration is Ownable, IDXITokenMigration {
     }
 
     /// @inheritdoc IDXITokenMigration
-    function disableWhitelist() external onlyOwner {
+    function initiateWhitelistDisable() external onlyOwner {
+        whitelistDisableTimestamp = block.timestamp + WHITELIST_DISABLE_DELAY;
+
+        emit WhitelistDisableInitiated(whitelistDisableTimestamp);
+    }
+
+    /// @inheritdoc IDXITokenMigration
+    function finalizeWhitelistDisable() external onlyOwner {
+        if (whitelistDisableTimestamp == 0) revert WhitelistDisabledNotInitiated();
+        if (block.timestamp < whitelistDisableTimestamp) {
+            revert WhitelistDisableEnforcedDelay(whitelistDisableTimestamp);
+        }
+
         emit WhitelistDisabled();
 
         isWhitelistEnabled = false;
+    }
+
+    /// @inheritdoc IDXITokenMigration
+    function cancelWhitelistDisable() external onlyOwner {
+        if (whitelistDisableTimestamp == 0) revert WhitelistDisabledNotInitiated();
+
+        emit WhitelistDisableCancelled();
+
+        whitelistDisableTimestamp = 0;
+    }
+
+    /// @inheritdoc IDXITokenMigration
+    function renounceOwnership() public override(Ownable, IDXITokenMigration) onlyOwner {
+        if (isWhitelistEnabled) revert WhitelistNotDisabled();
+
+        super.renounceOwnership();
     }
 
     /// @dev Check if an address is in the whitelist
