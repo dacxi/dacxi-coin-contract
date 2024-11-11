@@ -306,7 +306,7 @@ contract DXITokenMigrationTest is Test {
         vm.assume(account != account2);
 
         vm.expectEmit();
-        emit IDXITokenMigration.AddressAddedToWhitelist(account);
+        emit IDXITokenMigration.AddressWhitelistStatusChanged(account, true);
 
         migrator.addToWhitelist(account);
 
@@ -314,11 +314,22 @@ contract DXITokenMigrationTest is Test {
         assertFalse(migrator.isInWhitelist(account2));
     }
 
+    function test_CheckMyWhitelistStatus() public {
+        assertFalse(migrator.checkMyWhitelistStatus());
+
+        vm.expectEmit();
+        emit IDXITokenMigration.AddressWhitelistStatusChanged(address(this), true);
+
+        migrator.addToWhitelist(address(this));
+
+        assertTrue(migrator.checkMyWhitelistStatus());
+    }
+
     function test_CanAddAccountToWhitelistMultipleTimes(address account, address account2) public {
         vm.assume(account != account2);
 
         vm.expectEmit();
-        emit IDXITokenMigration.AddressAddedToWhitelist(account);
+        emit IDXITokenMigration.AddressWhitelistStatusChanged(account, true);
 
         migrator.addToWhitelist(account);
 
@@ -335,12 +346,12 @@ contract DXITokenMigrationTest is Test {
         vm.assume(account != account2 && account2 != account3 && account != account3);
 
         vm.expectEmit();
-        emit IDXITokenMigration.AddressAddedToWhitelist(account);
+        emit IDXITokenMigration.AddressWhitelistStatusChanged(account, true);
 
         migrator.addToWhitelist(account);
 
         vm.expectEmit();
-        emit IDXITokenMigration.AddressAddedToWhitelist(account2);
+        emit IDXITokenMigration.AddressWhitelistStatusChanged(account2, true);
 
         migrator.addToWhitelist(account2);
 
@@ -368,7 +379,7 @@ contract DXITokenMigrationTest is Test {
         assertFalse(migrator.isInWhitelist(account2));
 
         vm.expectEmit();
-        emit IDXITokenMigration.AddressRemovedFromWhitelist(account);
+        emit IDXITokenMigration.AddressWhitelistStatusChanged(account, false);
 
         migrator.removeFromWhitelist(account);
 
@@ -380,7 +391,7 @@ contract DXITokenMigrationTest is Test {
         assertFalse(migrator.isInWhitelist(account));
 
         vm.expectEmit();
-        emit IDXITokenMigration.AddressRemovedFromWhitelist(account);
+        emit IDXITokenMigration.AddressWhitelistStatusChanged(account, false);
 
         migrator.removeFromWhitelist(account);
 
@@ -398,30 +409,12 @@ contract DXITokenMigrationTest is Test {
         migrator.removeFromWhitelist(account);
     }
 
-    function test_OnlyOwnerCanRCheckWhitelist(address notOwner, address account) public {
-        vm.assume(notOwner != address(this));
-        vm.assume(address(this) != account);
-
-        vm.prank(notOwner);
-        vm.expectPartialRevert(Ownable.OwnableUnauthorizedAccount.selector);
-        migrator.isInWhitelist(account);
-
-        migrator.addToWhitelist(account);
-
-        vm.prank(notOwner);
-        vm.expectPartialRevert(Ownable.OwnableUnauthorizedAccount.selector);
-        migrator.isInWhitelist(account);
-    }
-
     function test_RenouncesTheOwnershipWhenDisableWhitelist(address account) public {
         migrator.disableWhitelist();
 
         assertNotEq(migrator.owner(), address(this));
 
         // -- check all methods that ony the owner can call
-        vm.expectPartialRevert(Ownable.OwnableUnauthorizedAccount.selector);
-        migrator.isInWhitelist(account);
-
         vm.expectPartialRevert(Ownable.OwnableUnauthorizedAccount.selector);
         migrator.addToWhitelist(account);
 

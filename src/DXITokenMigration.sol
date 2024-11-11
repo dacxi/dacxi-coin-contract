@@ -53,21 +53,26 @@ contract DXITokenMigration is Ownable, IDXITokenMigration {
 
     /// @inheritdoc IDXITokenMigration
     function addToWhitelist(address account) external onlyOwner {
-        emit AddressAddedToWhitelist(account);
+        emit AddressWhitelistStatusChanged(account, true);
 
         whitelist[account] = true;
     }
 
     /// @inheritdoc IDXITokenMigration
     function removeFromWhitelist(address account) external onlyOwner {
-        emit AddressRemovedFromWhitelist(account);
+        emit AddressWhitelistStatusChanged(account, false);
 
         whitelist[account] = false;
     }
 
     /// @inheritdoc IDXITokenMigration
-    function isInWhitelist(address account) external view onlyOwner returns (bool) {
+    function isInWhitelist(address account) external view returns (bool) {
         return _whitelistHasAddress(account);
+    }
+
+    /// @inheritdoc IDXITokenMigration
+    function checkMyWhitelistStatus() external view returns (bool) {
+        return _whitelistHasAddress(_msgSender());
     }
 
     /// @inheritdoc IDXITokenMigration
