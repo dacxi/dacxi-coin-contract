@@ -87,7 +87,10 @@ contract DXITokenMigration is Ownable, IDXITokenMigration {
 
     /// @inheritdoc IDXITokenMigration
     function finalizeWhitelistDisable() external onlyOwner {
+        //slither-disable-next-line timestamp
         if (whitelistDisableTimestamp == 0) revert WhitelistDisabledNotInitiated();
+
+        //slither-disable-next-line timestamp
         if (block.timestamp < whitelistDisableTimestamp) {
             revert WhitelistDisableEnforcedDelay(whitelistDisableTimestamp);
         }
@@ -99,6 +102,7 @@ contract DXITokenMigration is Ownable, IDXITokenMigration {
 
     /// @inheritdoc IDXITokenMigration
     function cancelWhitelistDisable() external onlyOwner {
+        //slither-disable-next-line timestamp
         if (whitelistDisableTimestamp == 0) revert WhitelistDisabledNotInitiated();
 
         emit WhitelistDisableCancelled();
@@ -106,8 +110,8 @@ contract DXITokenMigration is Ownable, IDXITokenMigration {
         whitelistDisableTimestamp = 0;
     }
 
-    /// @inheritdoc IDXITokenMigration
-    function renounceOwnership() public override(Ownable, IDXITokenMigration) onlyOwner {
+    /// @dev See {Ownable-renounceOwnership}.
+    function renounceOwnership() public override(Ownable) onlyOwner {
         if (isWhitelistEnabled) revert WhitelistNotDisabled();
 
         super.renounceOwnership();
